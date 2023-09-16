@@ -8,11 +8,15 @@ HEIGHT = 720
 
 PADDLE_SPEED = 600
 
-WINNING_SCORE = 2
+WINNING_SCORE = 5
+
+TIMER_INTERVAL = 500
 
 class GameMain:
     def __init__(self):
         pygame.init()
+        # Set up the timer
+        pygame.time.set_timer(pygame.USEREVENT, TIMER_INTERVAL)
 
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -25,8 +29,10 @@ class GameMain:
             'wall_hit': mixer.Sound('sounds/wall_hit.wav')
         }
 
-        self.player1 = Paddle(self.screen, 30, 90, 15, 60, WIDTH, HEIGHT)
-        self.player2 = Paddle(self.screen, WIDTH - 30, HEIGHT - 90, 15, 60, WIDTH, HEIGHT)
+        self.player1 = Paddle(self.screen, 30, 90, 15, 120, WIDTH, HEIGHT)
+        self.player2 = Paddle(self.screen, WIDTH - 30, HEIGHT - 90, 15, 120, WIDTH, HEIGHT)
+        # self.player1 = Paddle(self.screen, 30, 90, 15, 60, WIDTH, HEIGHT)
+        # self.player2 = Paddle(self.screen, WIDTH - 30, HEIGHT - 90, 15, 60, WIDTH, HEIGHT)
 
         self.ball = Ball(self.screen, WIDTH / 2 - 2, HEIGHT / 2 - 2, 12, 12, WIDTH, HEIGHT)
 
@@ -42,6 +48,7 @@ class GameMain:
         #4. 'done' (the game is over, with a victor, ready for restart)
 
         self.game_state = 'start'
+        self.ai_choice = 0
 
         self.small_font = pygame.font.Font('./font.ttf', 24)
         self.large_font = pygame.font.Font('./font.ttf', 48)
@@ -50,6 +57,7 @@ class GameMain:
         #text
         self.t_welcome = self.small_font.render("Welcome to Pong!", False, (255, 255, 255))
         self.t_press_enter_begin = self.small_font.render('Press Enter to begin!', False, (255, 255, 255))
+        self.t_press_choice_ai = self.small_font.render('Press 1 or 2 to pick AI for player 2', False, (255, 255, 255))
         self.t_player_turn = self.small_font.render("player" + str(self.serving_player) + "'s serve!", False, (255, 255, 255))
         self.t_press_enter_serve = self.small_font.render('Press Enter to serve!', False, (255, 255, 255))
         self.t_player_win = self.large_font.render("player" + str(self.serving_player) + "'s wins!", False, (255, 255, 255))
@@ -62,10 +70,13 @@ class GameMain:
     def update(self, dt):
         if self.game_state == "serve":
             self.ball.dy = random.uniform(-150, 150)
-            if self.serving_player == 1:
-                self.ball.dx = random.uniform(420, 600)
-            else:
-                self.ball.dx = -random.uniform(420, 600)
+            if (self.ball.dx == 0):
+                if self.serving_player == 1:       
+                    self.ball.dx = random.uniform(420, 600) # Define the speed of the ball 
+                    print('SET self.ball.dx =', self.ball.dx)
+                else:
+                    self.ball.dx = -random.uniform(420, 600)
+                    print('SET self.ball.dx =', self.ball.dx)
         elif self.game_state == 'play':
             if self.ball.Collides(self.player1):
                 self.ball.dx = -self.ball.dx * 1.03 #reflect speed multiplier
@@ -73,8 +84,10 @@ class GameMain:
 
                 if self.ball.dy < 0:
                     self.ball.dy = -random.uniform(30, 450)
+                    print('SET (player1) self.ball.dy =', self.ball.dy)
                 else:
                     self.ball.dy = random.uniform(30, 450)
+                    print('SET (player1) self.ball.dy =', self.ball.dy)
 
                 self.music_channel.play(self.sounds_list['paddle_hit'])
 
@@ -83,8 +96,10 @@ class GameMain:
                 self.ball.rect.x = self.player2.rect.x - 12
                 if self.ball.dy < 0:
                     self.ball.dy = -random.uniform(30, 450)
+                    print('SET (player2) self.ball.dy =', self.ball.dy)
                 else:
                     self.ball.dy = random.uniform(30, 450)
+                    print('SET (player2) self.ball.dy =', self.ball.dy)
 
                 self.music_channel.play(self.sounds_list['paddle_hit'])
 
@@ -134,6 +149,7 @@ class GameMain:
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
+                print('Goodbye! See you again :)')
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
@@ -155,7 +171,33 @@ class GameMain:
                         else:
                             self._SwitchPlayer(1)
 
-        #continuous input
+                ##! GET KEYBOARDS F/ USER, SET ai_choice TOO
+                if event.key == pygame.K_1:
+                    print("Key '1' pressed!, set ai_choice to 1")
+                    self.ai_choice = 1
+                elif event.key == pygame.K_2:
+                    print("Key '2' pressed!, set ai_choice to 2")
+                    self.ai_choice = 2
+
+            if event.type == pygame.USEREVENT and self.game_state == 'play' and self.ai_choice > 0:
+                randDirection = random.randint(0, 1)
+                speedPaddleResult = 0
+                if randDirection == 0:
+                    speedPaddleResult = -PADDLE_SPEED
+                    # speedPaddleResult = -PADDLE_SPEED * (random.randint(1, 2))
+                    self.player2.dy = speedPaddleResult
+                elif randDirection == 1:
+                    speedPaddleResult = PADDLE_SPEED
+                    # speedPaddleResult = PADDLE_SPEED * (random.randint(1, 2))
+                    self.player2.dy = speedPaddleResult
+                new_timer_interval = TIMER_INTERVAL * random.randint(1, 2)
+                print('[ timer-triggered ] self.player2.dy =', speedPaddleResult, 'new_timer_interval =', new_timer_interval)
+                pygame.time.set_timer(pygame.USEREVENT, new_timer_interval)
+                    
+                    
+
+        #continuous input 
+        ##! ( PADDLE CONTROL )
         key = pygame.key.get_pressed()
         if key[pygame.K_w]:
             self.player1.dy = -PADDLE_SPEED
@@ -163,12 +205,14 @@ class GameMain:
             self.player1.dy = PADDLE_SPEED
         else:
             self.player1.dy = 0
-        if key[pygame.K_UP]:
-            self.player2.dy = -PADDLE_SPEED
-        elif key[pygame.K_DOWN]:
-            self.player2.dy = PADDLE_SPEED
-        else:
-            self.player2.dy = 0
+
+        if self.ai_choice == 0:
+            if key[pygame.K_UP]:
+                self.player2.dy = -PADDLE_SPEED
+            elif key[pygame.K_DOWN]:
+                self.player2.dy = PADDLE_SPEED
+            else:
+                self.player2.dy = 0
 
     def _SwitchPlayer(self, player_number):
         self.serving_player = player_number
@@ -182,11 +226,20 @@ class GameMain:
     def draw(self):
         self.screen.fill((40, 45, 52))
 
+
+        # FOR TEXT CONTROL PROCESS
         if self.game_state == "start":
             text_rect = self.t_welcome.get_rect(center=(WIDTH/2, 20))
             self.screen.blit(self.t_welcome, text_rect)
             text_rect = self.t_press_enter_begin.get_rect(center=(WIDTH / 2, 40))
             self.screen.blit(self.t_press_enter_begin, text_rect)
+            text_rect = self.t_press_choice_ai.get_rect(center=(WIDTH / 2, 60))
+            self.screen.blit(self.t_press_choice_ai, text_rect)
+
+
+            text_rect = self.small_font.render('Current AI mode: {}'.format(self.ai_choice), False, (255, 255, 255)).get_rect(center=(WIDTH / 2, 100))
+            # text_rect = 'Current AI mode: {}'.format(self.ai_choice).get_rect(center=(WIDTH / 2, 100))
+            self.screen.blit(self.small_font.render('Current AI mode: {}'.format(self.ai_choice), False, (255, 255, 255)), text_rect)
         elif self.game_state == "serve":
             text_rect = self.t_player_turn.get_rect(center=(WIDTH / 2, 20))
             self.screen.blit(self.t_player_turn, text_rect)
@@ -230,4 +283,5 @@ if __name__ == '__main__':
         main.draw()
 
         pygame.display.update()
+
 
