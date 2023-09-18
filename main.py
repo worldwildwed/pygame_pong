@@ -8,9 +8,9 @@ HEIGHT = 720
 
 PADDLE_SPEED = 600
 
-WINNING_SCORE = 5
+WINNING_SCORE = 3
 
-TIMER_INTERVAL = 500
+TIMER_INTERVAL = 1000
 
 class GameMain:
     def __init__(self):
@@ -46,7 +46,7 @@ class GameMain:
         #4. 'done' (the game is over, with a victor, ready for restart)
 
         self.game_state = 'start'
-        self.ai_choice = 0
+        self.ai_choice = 1
         self.ai_random_win_last_round = False
 
         self.small_font = pygame.font.Font('./font.ttf', 24)
@@ -56,7 +56,7 @@ class GameMain:
         #text
         self.t_welcome = self.small_font.render("Welcome to Pong!", False, (255, 255, 255))
         self.t_press_enter_begin = self.small_font.render('Press Enter to begin!', False, (255, 255, 255))
-        self.t_press_choice_ai = self.small_font.render('Press 1 or 2 to pick AI for player 2', False, (255, 255, 255))
+        # self.t_press_choice_ai = self.small_font.render('Press 1 or 2 to pick AI for player 2', False, (255, 255, 255))
         self.t_player_turn = self.small_font.render("player" + str(self.serving_player) + "'s serve!", False, (255, 255, 255))
         self.t_press_enter_serve = self.small_font.render('Press Enter to serve!', False, (255, 255, 255))
         self.t_player_win = self.large_font.render("player" + str(self.serving_player) + "'s wins!", False, (255, 255, 255))
@@ -75,11 +75,11 @@ class GameMain:
                 ##! IF player_1 => Left to Right
                 if self.serving_player == 1:
                     self.ball.dx = random.uniform(420, 600) # Define the speed of the ball 
-                    print('[ serve-state ] SET self.ball.dx =', self.ball.dx)
+                    # print('[ serve-state ] SET self.ball.dx =', self.ball.dx)
                 ##! IF player_2 => Right to Left
                 else:
                     self.ball.dx = -random.uniform(420, 600)
-                    print('[ serve-state ] SET self.ball.dx =', self.ball.dx)
+                    # print('[ serve-state ] SET self.ball.dx =', self.ball.dx)
 
 
 
@@ -89,10 +89,10 @@ class GameMain:
                 self.ball.rect.x = self.player1.rect.x + 15
                 if self.ball.dy < 0:
                     self.ball.dy = -random.uniform(30, 450)
-                    print('[ play-state ] SET (player1) self.ball.dy =', self.ball.dy)
+                    # print('[ play-state ] SET (player1) self.ball.dy =', self.ball.dy)
                 else:
                     self.ball.dy = random.uniform(30, 450)
-                    print('[ play-state ] SET (player1) self.ball.dy =', self.ball.dy)
+                    # print('[ play-state ] SET (player1) self.ball.dy =', self.ball.dy)
                 self.music_channel.play(self.sounds_list['paddle_hit'])
 
             if self.ball.Collides(self.player2):
@@ -100,10 +100,10 @@ class GameMain:
                 self.ball.rect.x = self.player2.rect.x - 12
                 if self.ball.dy < 0:
                     self.ball.dy = -random.uniform(30, 450)
-                    print('[ play-state ] SET (player2) self.ball.dy =', self.ball.dy)
+                    # print('[ play-state ] SET (player2) self.ball.dy =', self.ball.dy)
                 else:
                     self.ball.dy = random.uniform(30, 450)
-                    print('[ play-state ] SET (player2) self.ball.dy =', self.ball.dy)
+                    # print('[ play-state ] SET (player2) self.ball.dy =', self.ball.dy)
                 self.music_channel.play(self.sounds_list['paddle_hit'])
 
             # ball hit top wall
@@ -122,11 +122,11 @@ class GameMain:
             if self.ai_choice == 2:
                 ##! AI CONTROL PADDLE ONLY WHEN THE BALL PASS HALF OF THE SCREEN
                 if self.ball.rect.x >= WIDTH//2 - 12 and self.ball.dx > 0:
-                    print('------------------------------------------------------------------------------------------')
-                    print('[ AI-002 ] ball-X={}, ball-Y={}'.format(self.ball.rect.x, self.ball.rect.y))
-                    print('[ AI-002 ] dy={}, paddle-x={}, paddle-y={}'.format(self.player2.dy, self.player2.rect.x, self.player2.rect.y))
-                    print(self.player2.rect.y, self.player2.height, self.ball.rect.y)
-                    print('------------------------------------------------------------------------------------------')
+                    # print('------------------------------------------------------------------------------------------')
+                    # print('[ AI-002 ] ball-X={}, ball-Y={}'.format(self.ball.rect.x, self.ball.rect.y))
+                    # print('[ AI-002 ] dy={}, paddle-x={}, paddle-y={}'.format(self.player2.dy, self.player2.rect.x, self.player2.rect.y))
+                    # print(self.player2.rect.y, self.player2.height, self.ball.rect.y)
+                    # print('------------------------------------------------------------------------------------------')
                     if self.player2.rect.y + self.player2.height//2 >= self.ball.rect.y:
                         self.player2.dy = -PADDLE_SPEED
                     else:
@@ -283,12 +283,11 @@ class GameMain:
             self.screen.blit(self.t_welcome, text_rect)
             text_rect = self.t_press_enter_begin.get_rect(center=(WIDTH / 2, 40))
             self.screen.blit(self.t_press_enter_begin, text_rect)
-            text_rect = self.t_press_choice_ai.get_rect(center=(WIDTH / 2, 60))
-            self.screen.blit(self.t_press_choice_ai, text_rect)
+            # text_rect = self.t_press_choice_ai.get_rect(center=(WIDTH / 2, 60))
+            # self.screen.blit(self.t_press_choice_ai, text_rect)
 
             ##! Write ai_choice TEXT
-            text_rect = self.small_font.render('Current AI mode: {}'.format(self.ai_choice), False, (255, 255, 255)).get_rect(center=(WIDTH / 2, 100))
-            # text_rect = 'Current AI mode: {}'.format(self.ai_choice).get_rect(center=(WIDTH / 2, 100))
+            text_rect = self.small_font.render('Current AI mode: {}'.format(self.ai_choice), False, (255, 255, 255)).get_rect(center=(WIDTH / 2, 60))
             self.screen.blit(self.small_font.render('Current AI mode: {}'.format(self.ai_choice), False, (255, 255, 255)), text_rect)
         elif self.game_state == "serve":
             text_rect = self.t_player_turn.get_rect(center=(WIDTH / 2, 20))
@@ -296,6 +295,10 @@ class GameMain:
             text_rect = self.t_press_enter_serve.get_rect(center=(WIDTH / 2, 40))
             self.screen.blit(self.t_press_enter_serve, text_rect)
         elif self.game_state == "play":
+            # tmp='RandomAI' if self.ai_choice == 1 else 'HardAI'
+            # print(tmp)
+            text_rect = self.small_font.render('Current AI mode: {} (SUPERAI)'.format(self.ai_choice, 'TEXT'), False, (255, 255, 255)).get_rect(center=(WIDTH / 2, 20))
+            self.screen.blit(self.small_font.render('Current AI mode: {} ({})'.format(self.ai_choice, 'RandomAI' if self.ai_choice == 1 else 'HardAI'), False, (255, 255, 255)), text_rect)
             pass
         elif self.game_state == "done":
             text_rect = self.t_player_win.get_rect(center=(WIDTH / 2, 30))
